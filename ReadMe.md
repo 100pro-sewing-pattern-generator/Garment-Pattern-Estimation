@@ -104,7 +104,7 @@ Garment-Pattern-Estimation/system.json
 以下の項目に貼り付けます。
 
 ```
-datasets_path
+datasets_path="コピーしたパス"
 ```
 
 ---
@@ -120,7 +120,7 @@ datasets_path
 3. 以下のコマンドの `path` をコピーしたパスに置き換えて実行します
 
 ```bash
-export PYTHONPATH="packageフォルダへのPath"
+export PYTHONPATH="コピーしたPath"
 ```
 
 ---
