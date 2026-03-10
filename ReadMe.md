@@ -1,52 +1,56 @@
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/neuraltailor-reconstructing-sewing-pattern/on-dataset-of-3d-garments-with-sewing)](https://paperswithcode.com/sota/on-dataset-of-3d-garments-with-sewing?p=neuraltailor-reconstructing-sewing-pattern)
+## MAC
 
-# NeuralTailor: Reconstructing Sewing Pattern Structures from 3D Point Clouds of Garments
+### 本レポジトリのクローン
+`git clone git@github.com:100pro-sewing-pattern-generator/Garment-Pattern-Estimation.git`
 
-![Overview of the Neural Tailor Pipeline](img/header.png)
+### Minicondaのインストール
+`wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh`
 
-Official implementation of [NeuralTailor: Reconstructing Sewing Pattern Structures from 3D Point Clouds of Garments](https://arxiv.org/abs/2201.13063). Provides our pre-trained models, scripts to evalute them, and tools to train framework components from scratch.
+### MinicondaのPATH設定
+`export PATH="$HOME/miniconda3/bin:$PATH"`
 
-| :zap:        Our NeuralTailor paper was accepted to SIGGRAPH 2022!   |
-|----------------------------------------------------------------------|
+### 環境設定
+`conda create -n Garments python=3.9`
+`conda activate Garments`
 
-## Dataset
+### 依存関係のインストール
+`pip install -r requirements.txt`
 
-For training and evaluation, NeuralTailor uses dataset created with [Garment-Pattern-Generator](https://github.com/maria-korosteleva/Garment-Pattern-Generator).
-* Dataset is available from Zenodo: [Dataset of 3D Garments with Sewing Patterns](https://doi.org/10.5281/zenodo.5267549)
+### Garment-Pattern-Generatorレポジトリのクローン(Garment-Pattern-Estimationレポジトリと同じ階層)
+`git clone git@github.com:100pro-sewing-pattern-generator/Garment-Pattern-Generator.git`
 
-## Docs
-Provided in `./docs` folder
+今の時点でファイル構造は
+100pro
 
-1. Installtion instructions: [Installation](docs/Installation.md)
-2. How to run training and evaluation: [Running](docs/Running.md)
+  -Garment-Pattern-Estimation
 
-## Citation
+  -Garment-Pattern-Generator
 
-If you are using our system in your research, consider citing our paper.
+### 評価データのダウンロード
+https://zenodo.org/records/5267549
 
-```
-@article{NeuralTailor2022,
-  author = {Korosteleva, Maria and Lee, Sung-Hee},
-  title = {NeuralTailor: Reconstructing Sewing Pattern Structures from 3D Point Clouds of Garments},
-  year = {2022},
-  issue_date = {July 2022},
-  publisher = {Association for Computing Machinery},
-  address = {New York, NY, USA},
-  volume = {41},
-  number = {4},
-  doi = {10.1145/3528223.3530179},
-  journal = {ACM Trans. Graph.},
-  numpages = {16},
-  keywords = {structured deep learning, sewing patterns, garment reconstruction}
-}
-```
+この中のtest.zipをダウンロードして解凍しtestフォルダを手に入れる
 
+新しくGarments-datasetのフォルダをFinderで作り、その中にtestフォルダを置いとく
 
-## Contact
-For bug reports, feature suggestion, and code-related questions, please [open an issue](https://github.com/maria-korosteleva/Garment-Pattern-Estimation/issues). 
+このGarments-datasetをGarment-Pattern-Estimationフォルダ, Garment-Pattern-Generatorフォルダと同じ場所に入れる
 
-For other inquires, contact the authors: 
+今の構造は
 
-* Maria Korosteleva ([mariako@kaist.ac.kr](mailto:mariako@kaist.ac.kr)) (Main point of contact). 
+100pro
+  -Garment-Pattern-Estimation
+  -Garment-Pattern-Generator
+  -Garments-dataset
+    -test
+      -dress_150
+      -jacket_hood_sleevess_150
+      ...
 
-* Sung-Hee Lee ([sunghee.lee@kaist.ac.kr](mailto:sunghee.lee@kaist.ac.kr)).
+Garments-datasetフォルダをクリックしてCopy Pathを選択する
+
+コピーされたものをGarment-Pattern-Estimationの中のsystem.jsonのdatasets_pathに貼り付ける
+
+### 実行
+`python nn/evaluation_scripts/on_test_set.py -sh models/att/att.yaml -st models/att/stitch_model.yaml --unseen --predict`
+
+これで評価データの評価結果がoutputsフォルダに入る
