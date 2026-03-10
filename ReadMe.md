@@ -1,56 +1,127 @@
-## MAC
+# セットアップ（Mac）
 
-### 本レポジトリのクローン
-`git clone git@github.com:100pro-sewing-pattern-generator/Garment-Pattern-Estimation.git`
+## 1. 本レポジトリのクローン
 
-### Minicondaのインストール
-`wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh`
+```bash
+git clone git@github.com:100pro-sewing-pattern-generator/Garment-Pattern-Estimation.git
+cd Garment-Pattern-Estimation
+```
 
-### MinicondaのPATH設定
-`export PATH="$HOME/miniconda3/bin:$PATH"`
+---
 
-### 環境設定
-`conda create -n Garments python=3.9`
-`conda activate Garments`
+## 2. Minicondaのインストール
 
-### 依存関係のインストール
-`pip install -r requirements.txt`
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh
+bash Miniconda3-latest-MacOSX-arm64.sh -b
+```
 
-### Garment-Pattern-Generatorレポジトリのクローン(Garment-Pattern-Estimationレポジトリと同じ階層)
-`git clone git@github.com:100pro-sewing-pattern-generator/Garment-Pattern-Generator.git`
+### PATHの設定
 
-今の時点でファイル構造は
+```bash
+export PATH="$HOME/miniconda3/bin:$PATH"
+```
+
+---
+
+## 3. conda環境の作成
+
+```bash
+conda create -n Garments python=3.9
+conda activate Garments
+```
+
+---
+
+## 4. 依存関係のインストール
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 5. Garment-Pattern-Generator レポジトリのクローン
+
+以下のレポジトリを **Garment-Pattern-Estimation と同じ階層** にクローンします。
+
+```bash
+git clone git@github.com:100pro-sewing-pattern-generator/Garment-Pattern-Generator.git
+```
+
+この時点でのディレクトリ構造は以下のようになります。
+
+```
 100pro
+├─ Garment-Pattern-Estimation
+└─ Garment-Pattern-Generator
+```
 
-  -Garment-Pattern-Estimation
+---
 
-  -Garment-Pattern-Generator
+## 6. 評価データのダウンロード
 
-### 評価データのダウンロード
+以下のリンクからデータセットをダウンロードします。
+
 https://zenodo.org/records/5267549
 
-この中のtest.zipをダウンロードして解凍しtestフォルダを手に入れる
+1. `test.zip` をダウンロード  
+2. 解凍して `test` フォルダを取得  
 
-新しくGarments-datasetのフォルダをFinderで作り、その中にtestフォルダを置いとく
+Finderで **Garments-dataset** フォルダを作成し、その中に `test` フォルダを配置します。
 
-このGarments-datasetをGarment-Pattern-Estimationフォルダ, Garment-Pattern-Generatorフォルダと同じ場所に入れる
+```
+Garments-dataset
+└─ test
+```
 
-今の構造は
+その後、**Garments-dataset** フォルダを以下の場所に配置します。
 
+```
 100pro
-  -Garment-Pattern-Estimation
-  -Garment-Pattern-Generator
-  -Garments-dataset
-    -test
-      -dress_150
-      -jacket_hood_sleevess_150
-      ...
+├─ Garment-Pattern-Estimation
+├─ Garment-Pattern-Generator
+└─ Garments-dataset
+   └─ test
+      ├─ dress_150
+      ├─ jacket_hood_sleevess_150
+      └─ ...
+```
 
-Garments-datasetフォルダをクリックしてCopy Pathを選択する
+---
 
-コピーされたものをGarment-Pattern-Estimationの中のsystem.jsonのdatasets_pathに貼り付ける
+## 7. dataset path の設定
 
-### 実行
-`python nn/evaluation_scripts/on_test_set.py -sh models/att/att.yaml -st models/att/stitch_model.yaml --unseen --predict`
+1. **Garments-dataset** フォルダを右クリック  
+2. **Copy Path** を選択  
+3. コピーされたパスを以下のファイルに設定します。
 
-これで評価データの評価結果がoutputsフォルダに入る
+```
+Garment-Pattern-Estimation/system.json
+```
+
+以下の項目に貼り付けます。
+
+```
+datasets_path
+```
+
+---
+
+## 8. 実行（評価）
+
+以下のコマンドを実行します。
+
+```bash
+python nn/evaluation_scripts/on_test_set.py \
+-sh models/att/att.yaml \
+-st models/att/stitch_model.yaml \
+--unseen \
+--predict
+```
+
+評価結果は以下のフォルダに保存されます。
+
+```
+outputs
+```
