@@ -11,7 +11,10 @@ from data import InvalidPatternDefError
 # ------- Model evaluation shortcut -------------
 def eval_metrics(model, data_wrapper, section='test'):
     """Evalutes current model on the given dataset section"""
-    device = model.device_ids[0] if hasattr(model, 'device_ids') else torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    if hasattr(model, 'device_ids') and model.device_ids:
+        device = model.device_ids[0]
+    else:
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     
     model.to(device)
     model.eval()

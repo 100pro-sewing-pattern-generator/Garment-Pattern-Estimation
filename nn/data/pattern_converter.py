@@ -414,11 +414,12 @@ class NNSewingPattern(VisPattern):
         self.pattern['stitches'] = []
         model.eval()
 
-        edge_pairs_list, pairs_mapping, _ = self.all_edge_pairs(device=model.device_ids[0])
+        device = model.device_ids[0] if hasattr(model, "device_ids") and model.device_ids else "cpu"
+        edge_pairs_list, pairs_mapping, _ = self.all_edge_pairs(device)
 
         # apply appropriate scaling
-        shift = torch.tensor(data_stats['f_shift'], device=model.device_ids[0])
-        scale = torch.tensor(data_stats['f_scale'], device=model.device_ids[0])
+        shift = torch.tensor(data_stats['f_shift'], device=device)
+        scale = torch.tensor(data_stats['f_scale'], device=device)
         edge_pairs_list = (edge_pairs_list - shift) / scale
 
         preds = model(edge_pairs_list)

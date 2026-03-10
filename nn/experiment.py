@@ -410,6 +410,6 @@ class ExperimentWrappper(object):
     def _load_model_from_file(self, file, device=None):
         print(file)
         if device is not None:
-            return torch.load(file, map_location=device)
+            return torch.load(file, map_location=torch.device('cpu'), weights_only=False)
         else: 
             return torch.load(file)  # to the same device it was saved from

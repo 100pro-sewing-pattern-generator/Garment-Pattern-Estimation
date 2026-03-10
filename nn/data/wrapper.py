@@ -214,7 +214,10 @@ class DatasetWrapper(object):
         prediction_path = save_to / (f'nn_{dir_tag}_' + datetime.now().strftime('%y%m%d-%H-%M-%S'))
         prediction_path.mkdir(parents=True, exist_ok=True)
 
-        device = model.device_ids[0] if hasattr(model, 'device_ids') else torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        if hasattr(model, 'device_ids') and model.device_ids:
+            device = model.device_ids[0]
+        else:
+            device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         model.to(device)
         model.eval()
 

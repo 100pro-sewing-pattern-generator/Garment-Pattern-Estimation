@@ -7,6 +7,8 @@ import shutil
 import torch
 from torch.utils.data import DataLoader, Dataset, Subset
 import igl
+from scipy.spatial import cKDTree
+
 # import meshplot  # when uncommented, could lead to problems with wandb run syncing
 
 # My modules
@@ -847,7 +849,7 @@ class Garment3DPatternFullDataset(GarmentBaseDataset):
         """A routine to sample requested number of points from a given mesh
             Returns points in world coordinates"""
 
-        barycentric_samples, face_ids = igl.random_points_on_mesh(num_points, verts, faces)
+        barycentric_samples, face_ids, _ = igl.random_points_on_mesh(num_points, verts, faces)
         face_ids[face_ids >= len(faces)] = len(faces) - 1  # workaround for https://github.com/libigl/libigl/issues/1531
 
         # convert to world coordinates
@@ -864,45 +866,70 @@ class Garment3DPatternFullDataset(GarmentBaseDataset):
         """Map segmentation from original mesh to sampled points"""
 
         # load segmentation
-        seg_path_list = [file for file in folder_elements if self.config['obj_filetag'] in file and 'segmentation.txt' in file]
+        seg_path_list = [
+            file for file in folder_elements
+            if self.config['obj_filetag'] in file and 'segmentation.txt' in file
+        ]
 
         with open(str(self.root_path / datapoint_name / seg_path_list[0]), 'r') as f:
-            vert_labels = np.array([line.rstrip() for line in f])  # remove \n
-        map_list, _, _ = igl.snap_points(points, verts)
+            vert_labels = np.array([line.rstrip() for line in f])
+
+        # ---- snap_points(points, verts) 代替 ----
+        from scipy.spatial import cKDTree
+        tree_verts = cKDTree(verts)
+        _, map_list = tree_verts.query(points)
 
         if len(verts) > len(vert_labels):
             point_segmentation = np.zeros(len(map_list))
-            print(f'{self.__class__.__name__}::{datapoint_name}::WARNING::Not enough segmentation labels -- {len(vert_labels)} for {len(verts)} vertices. Setting segmenations to zero')
-
+            print(
+                f'{self.__class__.__name__}::{datapoint_name}'
+                f'::WARNING::Not enough segmentation labels '
+                f'-- {len(vert_labels)} for {len(verts)} vertices. '
+                f'Setting segmentations to zero'
+            )
             return point_segmentation.astype(np.int64)
 
         point_segmentation_names = vert_labels[map_list]
 
         # find those that map to stitches and assign them the closest panel label
-        # Also doing this for occasional 'None's 
-        stitch_points_ids = np.logical_or(
-            point_segmentation_names == 'stitch', point_segmentation_names == 'None')
-        non_stitch_points_ids = np.logical_and(
-            point_segmentation_names != 'stitch', point_segmentation_names != 'None')
+        stitch_points_mask = np.logical_or(
+            point_segmentation_names == 'stitch',
+            point_segmentation_names == 'None'
+        )
 
-        map_stitches, _, _ = igl.snap_points(points[stitch_points_ids], points[non_stitch_points_ids])
+        non_stitch_points_mask = np.logical_and(
+            point_segmentation_names != 'stitch',
+            point_segmentation_names != 'None'
+        )
 
-        non_stitch_points_ids = np.flatnonzero(non_stitch_points_ids)
-        point_segmentation_names[stitch_points_ids] = point_segmentation_names[non_stitch_points_ids[map_stitches]]
+        # ---- snap_points(stitch_points, non_stitch_points) 代替 ----
+        if np.any(stitch_points_mask) and np.any(non_stitch_points_mask):
 
-        # Map class names to int ids of loaded classes!
+            stitch_points = points[stitch_points_mask]
+            non_stitch_points = points[non_stitch_points_mask]
+
+            tree_non_stitch = cKDTree(non_stitch_points)
+            _, map_stitches = tree_non_stitch.query(stitch_points)
+
+            non_stitch_indices = np.flatnonzero(non_stitch_points_mask)
+
+            point_segmentation_names[stitch_points_mask] = \
+                point_segmentation_names[non_stitch_indices[map_stitches]]
+
+        # Map class names to int ids
         if self.panel_classifier is not None:
             point_segmentation = self.panel_classifier.map(
-                self.template_name(datapoint_name), point_segmentation_names)
+                self.template_name(datapoint_name),
+                point_segmentation_names
+            )
         else:
-            # assign unique ids within given list
             unique_names = np.unique(point_segmentation_names)
             unique_dict = {name: idx for idx, name in enumerate(unique_names)}
             point_segmentation = np.empty(len(point_segmentation_names))
             for idx, name in enumerate(point_segmentation_names):
                 point_segmentation[idx] = unique_dict[name]
 
-        return point_segmentation.astype(np.int64)   # type conversion for PyTorch NLLoss
+        return point_segmentation.astype(np.int64)
 
     def _empty_panels_mask(self, num_edges):
         """Empty panels as boolean mask"""

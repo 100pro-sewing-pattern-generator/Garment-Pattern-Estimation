@@ -84,14 +84,17 @@ def get_values_from_args():
 
 def sample_points_obj(filename, num_points):
     """Sample point cloud from .obj file"""
-    # TODO Use the same function as the main code?
     verts, faces = igl.read_triangle_mesh(str(filename))
 
-    # np.random.seed(601)
     for _ in range(3):
-        barycentric_samples, face_ids = igl.random_points_on_mesh(num_points, verts, faces)
+        result = igl.random_points_on_mesh(num_points, verts, faces)
 
-        points = np.empty(barycentric_samples.shape)
+        if len(result) == 2:
+            barycentric_samples, face_ids = result
+        else:
+            barycentric_samples, face_ids, _ = result
+
+        points = np.empty((num_points, 3))
         for i in range(len(face_ids)):
             face = faces[face_ids[i]]
             barycentric_coords = barycentric_samples[i]
