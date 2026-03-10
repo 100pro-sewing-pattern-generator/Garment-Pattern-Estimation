@@ -46,6 +46,7 @@ pip install -r requirements.txt
 以下のレポジトリを **Garment-Pattern-Estimation と同じ階層** にクローンします。
 
 ```bash
+cd ..
 git clone git@github.com:100pro-sewing-pattern-generator/Garment-Pattern-Generator.git
 ```
 
@@ -108,11 +109,28 @@ datasets_path
 
 ---
 
-## 8. 実行（評価）
+## 8. PYTHONPATH の設定
+
+`Garment-Pattern-Estimation` から  
+`Garment-Pattern-Generator` の `package` フォルダを利用するため、  
+`PYTHONPATH` を設定します。
+
+1. `Garment-Pattern-Generator` 内の **package フォルダ**を右クリック  
+2. **Copy Path** を選択  
+3. 以下のコマンドの `path` をコピーしたパスに置き換えて実行します
+
+```bash
+export PYTHONPATH="packageフォルダへのPath"
+```
+
+---
+
+## 9. 実行（評価）
 
 以下のコマンドを実行します。
 
 ```bash
+cd Garment-Pattern-Estimation
 python nn/evaluation_scripts/on_test_set.py \
 -sh models/att/att.yaml \
 -st models/att/stitch_model.yaml \
